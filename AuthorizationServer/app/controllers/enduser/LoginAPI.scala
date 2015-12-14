@@ -1,6 +1,11 @@
 package controllers
 
-import model.clientAPI.API
+import java.util.UUID
+
+import model.clientAPI.{APIError, API}
+import play.api.data._
+import play.api.data.Forms._
+import play.api.libs.json.Json
 import play.api.mvc._
 
 /**
@@ -28,10 +33,24 @@ import play.api.mvc._
      +--------+                               +---------------+
   */
 
+case class AuthorizationGrantData(client_id : String, username : String, password : String, scope : String)
+
+case class AccessToken(token: String, refreshToken : String)
+
 class LoginAPI extends Controller {
 
-  def authGrant = Action { implicit request =>
-    API("Cool")
+  //TODO: add max length validation
+  def authGrant() = Action(parse.form(authGrantForm)) { implicit request =>
+    val token = AccessToken(UUID.randomUUID().toString, UUID.randomUUID().toString)
+    API(token)(Json.writes[AccessToken], request)
   }
 
+  val authGrantForm = Form(
+    mapping(
+      "client_id" -> text,
+      "username" -> text,
+      "password" -> text,
+      "scope" -> text
+    )(AuthorizationGrantData.apply)(AuthorizationGrantData.unapply)
+  )
 }
