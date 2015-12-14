@@ -58,6 +58,14 @@ object FAPI {
 
 object API {
 
+  def apply[A](t : Future[A])(implicit tis:Writes[A], request : RequestHeader) : Future[Result] = {
+    t.map { result =>
+      apply(result)
+    }.recoverWith {
+      case e : Throwable => FAPI(e,logout = false)
+    }
+  }
+
   def apply[A](t : Try[A])(implicit tis:Writes[A], request : RequestHeader) : Result = {
     t match {
       case Success(a) =>
