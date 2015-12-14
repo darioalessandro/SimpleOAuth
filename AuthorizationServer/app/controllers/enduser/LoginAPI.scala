@@ -56,14 +56,17 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
   def authGrant() = Action.async(parse.form(authGrantForm)) { implicit request =>
 
     implicit val t : akka.util.Timeout = akka.util.Timeout(5 seconds)
+
+    //TODO: add type safety to this call to avoid nasty pattern matching below
     val loginResult : Future[Any] = OAuthCoordinator ? LoginRequest(request.body.username, request.body.password, UUID.randomUUID())
 
     loginResult match {
-      case l : Future[LoginResult] =>
-        l.map { l =>
-          l.error.map { e =>
+      case future : Future[LoginResult] =>
+        future.map { result =>
+          result.error.map { e =>
             API(e, logout = false)
           }.getOrElse {
+            //TODO: save this stuff in the DB
             val token = AccessToken(UUID.randomUUID().toString, UUID.randomUUID().toString)
             API(token)(Json.writes[AccessToken], request)
           }
