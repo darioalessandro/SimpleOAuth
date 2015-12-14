@@ -1,0 +1,62 @@
+@(client_id : String, scope : String)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="apple-touch-icon" sizes="57x57" href="@routes.Assets.versioned("icons/apple-icon-57x57.png")">
+    <link rel="apple-touch-icon" sizes="60x60" href="@routes.Assets.versioned("icons/apple-icon-60x60.png")">
+    <link rel="apple-touch-icon" sizes="72x72" href="@routes.Assets.versioned("icons/apple-icon-72x72.png")">
+    <link rel="apple-touch-icon" sizes="76x76" href="@routes.Assets.versioned("icons/apple-icon-76x76.png")">
+    <link rel="apple-touch-icon" sizes="114x114" href="@routes.Assets.versioned("icons/apple-icon-114x114.png")">
+    <link rel="apple-touch-icon" sizes="120x120" href="@routes.Assets.versioned("icons/apple-icon-120x120.png")">
+    <link rel="apple-touch-icon" sizes="144x144" href="@routes.Assets.versioned("icons/apple-icon-144x144.png")">
+    <link rel="apple-touch-icon" sizes="152x152" href="@routes.Assets.versioned("icons/apple-icon-152x152.png")">
+    <link rel="apple-touch-icon" sizes="180x180" href="@routes.Assets.versioned("icons/apple-icon-180x180.png")">
+    <link rel="icon" type="image/png" sizes="192x192"  href="@routes.Assets.versioned("icons/android-icon-192x192.png")">
+    <link rel="icon" type="image/png" sizes="32x32" href="@routes.Assets.versioned("icons/favicon-32x32.png")">
+    <link rel="icon" type="image/png" sizes="96x96" href="@routes.Assets.versioned("icons/favicon-96x96.png")">
+    <link rel="icon" type="image/png" sizes="16x16" href="@routes.Assets.versioned("icons/favicon-16x16.png")">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="keywords" content="Bit manipulation,
+    TCP, UDP, HTTP, REST, WebSockets. HTML, XML, JSON
+    Akka Framework, Akka Cluster, Anorm, Play Framework, Angular JS,
+    Java, Objective C, Scala, Javascript, CSS, C, Swift,
+    IntelliJ, XCode, sbt, ssh, scp, Mac OS X, Linux, Windows 7">
+    <title>Dario A Lencina-Talarico</title>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap.min.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap-theme.min.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css/main.css")">
+    <script src="@routes.Assets.versioned("lib/jquery/jquery.min.js")"></script>
+    <script src="@routes.Assets.versioned("lib/bootstrap/js/bootstrap.min.js")"></script>
+    @*<script src="@routes.Assets.versioned("lib/angularjs/angular.js")"></script>*@
+    @*<script src="@routes.Assets.versioned("lib/angular-toastr/angular-toastr.js")"></script>*@
+    @*<script src="@routes.Assets.versioned("lib/angular-ui-bootstrap/ui-bootstrap-tpls.js")"></script>*@
+    @*<script src="@routes.Assets.versioned("lib/angular-ui-router/angular-ui-router.js")"></script>*@
+    @*<script src="@routes.Assets.versioned("js/app.js")"></script>*@
+    @*<script src="@routes.Assets.versioned("js/ResumeController.js")"></script>*@
+</head>
+<body>
+    <label>@client_id</label>
+    <label>@scope</label>
+    <div class="container">
+        <form role="form" action="@controllers.routes.LoginAPI.authGrant" method="post">
+            <div class="form-group">
+                <label for="email">Email address:</label>
+                <input type="email" class="form-control" id="email">
+            </div>
+            <div class="form-group">
+                <label for="pwd">Password:</label>
+                <input type="password" class="form-control" id="pwd">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+    </div>
+
+    <footer>Dario A Lencina Talarico 2015</footer>
+</body>
+</html>
