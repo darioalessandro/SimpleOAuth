@@ -1,5 +1,6 @@
 package controllers
 
+import model.clientAPI.API
 import play.api.mvc._
 
 /**
@@ -29,8 +30,8 @@ import play.api.mvc._
 
 class LoginAPI extends Controller {
 
-  def authGrant = Action {
-    Ok("Cool")
+  def authGrant = Action { implicit request =>
+    API("Cool")
   }
 
 }
