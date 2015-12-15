@@ -54,7 +54,7 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
   //TODO: add max length validation
   def authGrant() = Action.async(parse.form(authGrantForm)) { implicit request =>
 
-    implicit val t: akka.util.Timeout = akka.util.Timeout(5 hours)
+    implicit val t: akka.util.Timeout = akka.util.Timeout(5 seconds)
 
     //TODO: add type safety to this call to avoid nasty pattern matching below
     val authGrant = request.body
