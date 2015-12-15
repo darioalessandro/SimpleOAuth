@@ -3,48 +3,15 @@ package model.OAuth
 import java.util.UUID
 
 import akka.actor.{Props, ActorRef, Actor}
+import com.datastax.driver.core.{Session, Cluster}
 import model.OAuth.OAuthCoordinator.{LoginResult, LoginRequest}
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
+import scala.collection.JavaConverters._
 
 /**
   * Created by darioalessandro on 12/14/15.
   */
 
 case class User(name : String)
-
-object JsonCat {
-
-  //TODO: implement real parser
-  implicit val userReader = new Reads[Option[User]] {
-
-    def reads(json : JsValue) : JsResult[Option[User]] =  {
-      json match {
-
-        case j : JsObject =>
-          JsSuccess(Some(User("not really parsed")))
-
-        case j : JsArray =>
-          JsError("sdf")
-      }
-
-    }
-
-  }
-
-  implicit val userWriter = new Writes[Option[User]] {
-    def writes(user: Option[User]): JsValue = {
-      user match {
-        case Some(u) =>
-          Json.obj("name" -> u.name)
-        case None =>
-          Json.obj()
-      }
-    }
-  }
-
-}
 
 object OAuthCoordinator {
   case class LoginRequest(username : String, password : String, opId : UUID)
@@ -57,15 +24,15 @@ class OAuthCoordinator extends Actor {
 
   var loginRequests : Map[UUID, ActorRef] = Map[UUID, ActorRef]()
 
-  var counter = 0
+  val cluster = Cluster.builder().addContactPoint("127.0.0.1").build()
+  val session = cluster.connect("authentication")
 
   override def receive : Receive = {
     case LoginRequest(username, password, opId) =>
       if(loginRequests.contains(opId))
         sender() ! LoginResult(None, error = Some(new Exception("request with UUID "+opId + "already exists")), opId)
       else {
-        counter = counter + 1
-        val worker = this.context.actorOf(Props(new OAuthWorker(counter % 2 == 0)), name = opId.toString)
+        val worker = this.context.actorOf(Props(new OAuthWorker(session)), name = opId.toString)
         this.loginRequests =  this.loginRequests + (opId -> sender())
         worker ! LoginRequest(username, password, opId)
       }
@@ -82,7 +49,24 @@ class OAuthCoordinator extends Actor {
 
 }
 
-class OAuthWorker(shouldFail : Boolean) extends Actor {
+class OAuthWorker(session : Session) extends Actor {
+
+  override def receive : Receive = {
+
+    case LoginRequest(username, password, opId) =>
+      val results = session.execute(s"""select * from users where username='$username'""").asScala.toList
+      sender() !  results.headOption.map { row =>
+        LoginResult(Some(User(username)), None, opId)
+      }.getOrElse {
+        LoginResult(None, Some(new Exception("no results for specified user")), opId)
+      }
+
+    case a =>
+      println("message not handled "+a)
+  }
+}
+
+class MockOAuthWorker(shouldFail : Boolean) extends Actor {
 
   override def receive : Receive = {
     case LoginRequest(username, password, opId) =>

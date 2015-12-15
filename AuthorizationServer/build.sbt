@@ -15,7 +15,8 @@ libraryDependencies ++= Seq(
   "org.webjars" % "angular-ui-bootstrap" % "0.13.3",
   "org.webjars" % "angular-toastr" % "1.3.0",
   "org.webjars" % "angularjs" % "1.4.3",
-  "org.webjars" % "bootstrap" % "3.3.5"
+  "org.webjars" % "bootstrap" % "3.3.5",
+  "com.datastax.cassandra" % "cassandra-driver-core" % "3.0.0-beta1"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
