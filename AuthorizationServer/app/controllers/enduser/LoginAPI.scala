@@ -3,9 +3,8 @@ package controllers
 import java.util.UUID
 import javax.inject.Inject
 
-import model.OAuth.OAuthCoordinator
-import model.OAuth.OAuthCoordinator.LoginResult
-import model.clientAPI.{ FAPI, API}
+import model.OAuth.{AccessToken, OAuthCoordinator}
+import model.clientAPI.{API, FAPI}
 import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc._
@@ -17,6 +16,8 @@ import model.OAuth.OAuthCoordinator._
 import play.api.libs.json._
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Singleton
+
+import scala.util.{Try, Success}
 
 /**
   * Created by darioalessandro on 12/14/15.
@@ -45,8 +46,6 @@ import javax.inject.Singleton
 
 case class AuthorizationGrantData(client_id : String, username : String, password : String, scope : String)
 
-case class AccessToken(token: String, refreshToken : String)
-
 @Singleton
 class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
 
@@ -55,26 +54,26 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
   //TODO: add max length validation
   def authGrant() = Action.async(parse.form(authGrantForm)) { implicit request =>
 
-    implicit val t : akka.util.Timeout = akka.util.Timeout(5 seconds)
+    implicit val t: akka.util.Timeout = akka.util.Timeout(5 hours)
 
     //TODO: add type safety to this call to avoid nasty pattern matching below
-    val loginResult : Future[Any] = OAuthCoordinator ? LoginRequest(request.body.username, request.body.password, UUID.randomUUID())
+    val authGrant = request.body
 
-    loginResult match {
-      case future : Future[LoginResult] =>
-        future.map { result =>
-          result.error.map { e =>
-            API(e, logout = false)
-          }.getOrElse {
-            //TODO: save this stuff in the DB
-            val token = AccessToken(UUID.randomUUID().toString, UUID.randomUUID().toString)
-            API(token)(Json.writes[AccessToken], request)
-          }
-        }.recoverWith {
-          case e : Throwable => FAPI(e, logout = false)
-        }
-      case _ =>
-        FAPI("fuck", logout = false)
+    val loginResult: Future[Any] = OAuthCoordinator ?
+      LoginRequest(authGrant.username, authGrant.password, authGrant.client_id, authGrant.scope, UUID.randomUUID())
+
+    loginResult.map {
+        case result: CreateTokenResult =>
+          API(result.token)(Json.writes[AccessToken], request)
+
+        case loginError: LoginError =>
+          API(loginError.error, logout = true)
+
+        case _ =>
+          API("unknown error", logout = false)
+
+    }.recoverWith {
+      case e: Throwable => FAPI(e, logout = false)
     }
   }
 
