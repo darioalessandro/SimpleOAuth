@@ -18,3 +18,15 @@ INSERT INTO users(username, password) VALUES ('dario','dario');
 
 ALTER KEYSPACE "authentication" WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 1};
 
+6) create table
+
+CREATE TABLE users ( username varchar, password varchar, PRIMARY KEY (username));
+
+CREATE TABLE tokens ( username varchar,otoken varchar, refreshToken varchar, PRIMARY KEY (otoken));
+
+7) alter table 
+
+ALTER TABLE tokens ADD creation timestamp;
+
+
+

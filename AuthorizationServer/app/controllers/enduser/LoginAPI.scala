@@ -70,8 +70,8 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
         val success = Json.writes[CreateTokenSuccess]
         API(result)(success, request)
 
-      case result: CreateTokenFailure =>
-        API(result.error, logout = false)
+      case CreateTokenFailure(username, error, opId) =>
+        API(error, logout = false)
 
       case loginError: LoginError =>
         API(loginError.error, logout = true)

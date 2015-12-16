@@ -98,7 +98,6 @@ object API {
 
   def apply(data:JsValue)(implicit request : RequestHeader)  : Result = APIResponse(None,Some(data)).toResult
 
-
   def apply(error:Option[APIError],data:JsValue)(implicit request : RequestHeader)  : Result = {
     val r = APIResponse(error, Some(data)).toResult
     error.map { e: APIError =>

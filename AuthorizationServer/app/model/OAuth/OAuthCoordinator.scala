@@ -14,6 +14,8 @@ import scala.util.{Success, Try}
 
 case class User(name : String)
 
+case class AccessToken(token: String, refreshToken : String)
+
 object OAuthCoordinator {
   class OAuthCoordinatorMessage()
   case class LoginRequest(username : String, password : String, clientId : String, scope : String, opId : UUID) extends OAuthCoordinatorMessage
@@ -27,9 +29,7 @@ object OAuthCoordinator {
 
 }
 
-case class AccessToken(token: String, refreshToken : String)
-
-class OAuthCoordinator extends Actor {
+class OAuthCoordinator extends Actor with akka.actor.ActorLogging {
 
   //TODO : Add logic so that this does not grow too much (backpressure)
 
@@ -52,7 +52,7 @@ class OAuthCoordinator extends Actor {
 
 }
 
-class OAuthWorker(session : Session) extends Actor {
+class OAuthWorker(session : Session) extends Actor with akka.actor.ActorLogging {
 
   override def receive : Receive = {
 
@@ -76,16 +76,22 @@ class OAuthWorker(session : Session) extends Actor {
   }
 }
 
-class TokenCreator(session : Session) extends Actor {
+class TokenCreator(session : Session) extends Actor with akka.actor.ActorLogging {
 
   override def receive : Receive = {
     case CreateToken(username : String, clientId : String, opId : UUID, requester : ActorRef) =>
       val token = UUID.randomUUID().toString
       val refreshToken = UUID.randomUUID().toString
-      val result = CreateTokenSuccess(username, AccessToken(token, refreshToken), opId)
+      val result = try {
+        session.execute(s"INSERT INTO tokens(username, otoken, refreshToken, creation) VALUES ('$username','$token','$refreshToken', dateof(now()))")
+        CreateTokenSuccess(username, AccessToken(token, refreshToken), opId)
+      }catch {
+        case e : Exception  =>
+          CreateTokenFailure(username, e, opId)
+      }
+
       requester ! result
       sender() ! result
-
   }
 
 }
