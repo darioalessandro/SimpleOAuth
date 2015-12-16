@@ -15,9 +15,12 @@ import scala.util.{Success, Try}
 case class User(name : String)
 
 object OAuthCoordinator {
-  case class LoginRequest(username : String, password : String, clientId : String, scope : String, opId : UUID)
-  case class LoginError(error : Throwable, opId : UUID, requestor : ActorRef)
-  case class CreateTokenResult(username : String, token : Try[AccessToken])
+  class OAuthCoordinatorMessage()
+  case class LoginRequest(username : String, password : String, clientId : String, scope : String, opId : UUID) extends OAuthCoordinatorMessage
+  case class LoginError(error : Throwable, opId : UUID, requestor : ActorRef) extends OAuthCoordinatorMessage
+  class CreateTokenResult() extends OAuthCoordinatorMessage
+  case class CreateTokenSuccess(username : String, token : AccessToken, opId : UUID) extends CreateTokenResult
+  case class CreateTokenFailure(username : String, error : Exception, opId : UUID) extends CreateTokenResult
 
   case class LoginRequestInternal(username : String, password : String, clientId : String, scope : String, opId : UUID, requestor : ActorRef)
   case class CreateToken(username : String, clientId : String, opId : UUID, requestor : ActorRef)
@@ -79,7 +82,7 @@ class TokenCreator(session : Session) extends Actor {
     case CreateToken(username : String, clientId : String, opId : UUID, requester : ActorRef) =>
       val token = UUID.randomUUID().toString
       val refreshToken = UUID.randomUUID().toString
-      val result = CreateTokenResult(username, Success(AccessToken(token, refreshToken)))
+      val result = CreateTokenSuccess(username, AccessToken(token, refreshToken), opId)
       requester ! result
       sender() ! result
 

@@ -17,6 +17,7 @@ import play.api.libs.json._
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Singleton
 
+
 /**
   * Created by darioalessandro on 12/14/15.
   *
@@ -47,6 +48,7 @@ case class AuthorizationGrantData(client_id : String, username : String, passwor
 @Singleton
 class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
 
+  //TODO: add restart stategy
   val OAuthCoordinator = system.actorOf(Props[OAuthCoordinator])
 
   implicit val t: akka.util.Timeout = akka.util.Timeout(5 seconds)
@@ -56,15 +58,20 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
 
     val authGrant = request.body
 
-    val loginResult: Future[Any] = OAuthCoordinator ? LoginRequest( authGrant.username,
-                                                                    authGrant.password,
-                                                                    authGrant.client_id,
-                                                                    authGrant.scope,
-                                                                    UUID.randomUUID())
+    val loginResult = OAuthCoordinator ? LoginRequest(authGrant.username,
+                                                      authGrant.password,
+                                                      authGrant.client_id,
+                                                      authGrant.scope,
+                                                      UUID.randomUUID())
 
     loginResult.map {
-      case result: CreateTokenResult =>
-        API(result.token)(Json.writes[AccessToken], request)
+      case result: CreateTokenSuccess =>
+        implicit val tokenparser = Json.writes[AccessToken]
+        val success = Json.writes[CreateTokenSuccess]
+        API(result)(success, request)
+
+      case result: CreateTokenFailure =>
+        API(result.error, logout = false)
 
       case loginError: LoginError =>
         API(loginError.error, logout = true)
@@ -72,8 +79,9 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
       case _ =>
         API("unknown error", logout = false)
 
-    }.recoverWith {
-      case e: Throwable => FAPI(e, logout = false)
+    }.recover {
+      case e =>
+        API(e, logout = false)
     }
   }
 
