@@ -17,8 +17,6 @@ import play.api.libs.json._
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Singleton
 
-import scala.util.{Try, Success}
-
 /**
   * Created by darioalessandro on 12/14/15.
   *
@@ -51,26 +49,28 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
 
   val OAuthCoordinator = system.actorOf(Props[OAuthCoordinator])
 
+  implicit val t: akka.util.Timeout = akka.util.Timeout(5 seconds)
+
   //TODO: add max length validation
   def authGrant() = Action.async(parse.form(authGrantForm)) { implicit request =>
 
-    implicit val t: akka.util.Timeout = akka.util.Timeout(5 seconds)
-
-    //TODO: add type safety to this call to avoid nasty pattern matching below
     val authGrant = request.body
 
-    val loginResult: Future[Any] = OAuthCoordinator ?
-      LoginRequest(authGrant.username, authGrant.password, authGrant.client_id, authGrant.scope, UUID.randomUUID())
+    val loginResult: Future[Any] = OAuthCoordinator ? LoginRequest( authGrant.username,
+                                                                    authGrant.password,
+                                                                    authGrant.client_id,
+                                                                    authGrant.scope,
+                                                                    UUID.randomUUID())
 
     loginResult.map {
-        case result: CreateTokenResult =>
-          API(result.token)(Json.writes[AccessToken], request)
+      case result: CreateTokenResult =>
+        API(result.token)(Json.writes[AccessToken], request)
 
-        case loginError: LoginError =>
-          API(loginError.error, logout = true)
+      case loginError: LoginError =>
+        API(loginError.error, logout = true)
 
-        case _ =>
-          API("unknown error", logout = false)
+      case _ =>
+        API("unknown error", logout = false)
 
     }.recoverWith {
       case e: Throwable => FAPI(e, logout = false)

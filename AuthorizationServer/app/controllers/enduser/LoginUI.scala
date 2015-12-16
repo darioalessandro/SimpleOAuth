@@ -33,6 +33,4 @@ class LoginUI extends Controller {
     Ok(views.html.enduser.Login(client_id, scope))
   }
 
-
-
 }
