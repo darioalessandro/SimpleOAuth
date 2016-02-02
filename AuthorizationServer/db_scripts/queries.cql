@@ -28,5 +28,7 @@ CREATE TABLE tokens ( username varchar,otoken varchar, refreshToken varchar, PRI
 
 ALTER TABLE tokens ADD creation timestamp;
 
+8) Alter table, add client_id
 
+ALTER TABLE tokens ADD client_id varchar;
 

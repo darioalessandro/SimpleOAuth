@@ -68,7 +68,10 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
       case result: CreateTokenSuccess =>
         implicit val tokenparser = Json.writes[AccessToken]
         val success = Json.writes[CreateTokenSuccess]
-        API(result)(success, request)
+        //API(result)(success, request)
+
+
+        Redirect(url = "http://localhost:9001/auth/callback", queryString = Map("token" -> Seq(result.token.token), "username" -> Seq(result.username)))
 
       case CreateTokenFailure(username, error, opId) =>
         API(error, logout = false)
