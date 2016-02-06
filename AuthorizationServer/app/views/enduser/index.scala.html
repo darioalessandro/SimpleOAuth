@@ -33,35 +33,31 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css/main.css")">
     <script src="@routes.Assets.versioned("lib/jquery/jquery.min.js")"></script>
     <script src="@routes.Assets.versioned("lib/bootstrap/js/bootstrap.min.js")"></script>
-    @*<script src="@routes.Assets.versioned("lib/angularjs/angular.js")"></script>*@
-    @*<script src="@routes.Assets.versioned("lib/angular-toastr/angular-toastr.js")"></script>*@
-    @*<script src="@routes.Assets.versioned("lib/angular-ui-bootstrap/ui-bootstrap-tpls.js")"></script>*@
-    @*<script src="@routes.Assets.versioned("lib/angular-ui-router/angular-ui-router.js")"></script>*@
-    @*<script src="@routes.Assets.versioned("js/app.js")"></script>*@
-    @*<script src="@routes.Assets.versioned("js/ResumeController.js")"></script>*@
+    <script src="@routes.Assets.versioned("lib/angularjs/angular.js")"></script>
+    <script src="@routes.Assets.versioned("lib/angular-toastr/angular-toastr.js")"></script>
+    <script src="@routes.Assets.versioned("lib/angular-ui-bootstrap/ui-bootstrap-tpls.js")"></script>
+    <script src="@routes.Assets.versioned("lib/angular-ui-router/angular-ui-router.js")"></script>
+
+    <script src="@controllers.routes.LoginUI.jsRoutes()" type="text/javascript"></script>
+    <script src="@controllers.routes.LoginAPI.jsRoutes()" type="text/javascript"></script>
+
+
+    <script src="@routes.Assets.versioned("js/app.js")"></script>
+    <script src="@routes.Assets.versioned("js/httpClient.js")"></script>
+    <script src="@routes.Assets.versioned("js/error.js")"></script>
+    <script src="@routes.Assets.versioned("js/LoginSvc.js")"></script>
+    <script src="@routes.Assets.versioned("js/LoginController.js")"></script>
+    <script src="@routes.Assets.versioned("js/LoginController.js")"></script>
+
+
+
 </head>
-<body>
-
-    <div class="container">
-
-        <form class="form-signin" role="form" action="@controllers.routes.LoginAPI.authGrant()" method="post">
-            <h2 class="form-signin-heading">Please sign in</h2>
-            <label for="inputEmail" class="sr-only">Email address</label>
-            <input type="text" id="inputEmail" class="form-control" placeholder="Email address" required autofocus name="username">
-            <label for="inputPassword" class="sr-only">Password</label>
-            <input type="password" id="inputPassword" class="form-control" placeholder="Password" required name="password">
-            <input type="hidden" name="client_id" value=@client_id>
-            <input type="hidden" name="scope" value=@scope>
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" value="remember-me"> Remember me
-                </label>
-            </div>
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-        </form>
-
-    </div> <!-- /container -->
-
+    <script type="application/javascript">
+            window.client_id =@Html(s""" "$client_id" """);
+            window.scope=@Html(scope);
+    </script>
+    <body ng-app="appAuth">
+    <div ui-view="main"></div>
     <footer>Dario A Lencina Talarico 2015</footer>
 </body>
 </html>

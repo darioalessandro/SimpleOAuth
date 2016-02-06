@@ -21,11 +21,11 @@ object OAuthCoordinator {
   case class LoginRequest(username : String, password : String, clientId : String, scope : String, opId : UUID) extends OAuthCoordinatorMessage
   case class LoginError(error : Throwable, opId : UUID, requestor : ActorRef) extends OAuthCoordinatorMessage
   class CreateTokenResult() extends OAuthCoordinatorMessage
-  case class CreateTokenSuccess(username : String, token : AccessToken, opId : UUID) extends CreateTokenResult
+  case class CreateTokenSuccess(username : String, token : AccessToken, opId : UUID, callbackUrl : String) extends CreateTokenResult
   case class CreateTokenFailure(username : String, error : Exception, opId : UUID) extends CreateTokenResult
 
   case class LoginRequestInternal(username : String, password : String, clientId : String, scope : String, opId : UUID, requestor : ActorRef)
-  case class CreateToken(username : String, clientId : String, opId : UUID, requestor : ActorRef)
+  case class CreateToken(username : String, clientId : String, opId : UUID, requestor : ActorRef, callbackUrl : String)
 
 }
 
@@ -57,15 +57,17 @@ class OAuthWorker(session : Session) extends Actor with akka.actor.ActorLogging 
   override def receive : Receive = {
 
     case LoginRequestInternal(username, password, clientId, scope, opId, requester) =>
-      val results = session.execute(s"""select * from users where username='$username'""").asScala.toList
+      val getUserQuery = session.execute(s"""select * from users where username='$username'""").asScala.toList
+      val redirectUrlQuery = session.execute(s"""select * from clients where client_id='$clientId'""").asScala.toList
 
-      results.headOption match {
-        case Some(user) =>
+      (getUserQuery.headOption,redirectUrlQuery.headOption) match {
+        case (Some(userRow),Some(redirectURLRow)) =>
+          val redirectURL = redirectURLRow.get("callback_url", classOf[String])
           val tokenCreator = this.context.actorOf(Props(new TokenCreator(session)), name = opId.toString)
-          tokenCreator ! CreateToken(username, clientId, opId, requester)
+          tokenCreator ! CreateToken(username, clientId, opId, requester, redirectURL)
 
-        case None =>
-          val error = LoginError(new Exception("no results for specified user"), opId, requester)
+        case _ =>
+          val error = LoginError(new Exception("credentials error"), opId, requester)
           requester ! error
           this.context.parent ! error
       }
@@ -79,12 +81,12 @@ class OAuthWorker(session : Session) extends Actor with akka.actor.ActorLogging 
 class TokenCreator(session : Session) extends Actor with akka.actor.ActorLogging {
 
   override def receive : Receive = {
-    case CreateToken(username : String, clientId : String, opId : UUID, requester : ActorRef) =>
+    case CreateToken(username : String, clientId : String, opId : UUID, requester : ActorRef, callbackUrl : String) =>
       val token = UUID.randomUUID().toString
       val refreshToken = UUID.randomUUID().toString
       val result = try {
         session.execute(s"INSERT INTO tokens(username, otoken, refreshToken, creation) VALUES ('$username','$token','$refreshToken', dateof(now()))")
-        CreateTokenSuccess(username, AccessToken(token, refreshToken), opId)
+        CreateTokenSuccess(username, AccessToken(token, refreshToken), opId, callbackUrl)
       }catch {
         case e : Exception  =>
           CreateTokenFailure(username, e, opId)

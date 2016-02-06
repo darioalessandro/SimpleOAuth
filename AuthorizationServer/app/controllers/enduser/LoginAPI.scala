@@ -10,6 +10,7 @@ import play.api.data.Forms._
 import play.api.mvc._
 import akka.actor._
 import akka.pattern.ask
+import play.api.routing.JavaScriptReverseRouter
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import model.OAuth.OAuthCoordinator._
@@ -53,8 +54,16 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
 
   implicit val t: akka.util.Timeout = akka.util.Timeout(5 seconds)
 
+  def jsRoutes = Action { implicit request =>
+    Ok(
+      JavaScriptReverseRouter("LoginAPIRouter")(
+        controllers.routes.javascript.LoginAPI.authGrant
+      )
+    ).as("text/javascript")
+  }
+
   //TODO: add max length validation
-  def authGrant() = Action.async(parse.form(authGrantForm)) { implicit request =>
+  def authGrant() = Action.async(parse.json[LoginPayload]) { implicit request =>
 
     val authGrant = request.body
 
@@ -68,9 +77,7 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
       case result: CreateTokenSuccess =>
         implicit val tokenparser = Json.writes[AccessToken]
         val success = Json.writes[CreateTokenSuccess]
-        //API(result)(success, request)
-
-        Redirect(url = "http://localhost:9001/auth/callback", queryString = Map("token" -> Seq(result.token.token), "username" -> Seq(result.username)))
+        API(result)(success, request)
 
       case CreateTokenFailure(username, error, opId) =>
         API(error, logout = false)
@@ -87,12 +94,8 @@ class LoginAPI @Inject() (system: ActorSystem)  extends Controller {
     }
   }
 
-  val authGrantForm = Form(
-    mapping(
-      "client_id" -> text,
-      "username" -> text,
-      "password" -> text,
-      "scope" -> text
-    )(AuthorizationGrantData.apply)(AuthorizationGrantData.unapply)
-  )
+  case class LoginPayload(username : String, password : String,
+                         client_id : String, scope : String)
+
+  implicit val loginParser = Json.format[LoginPayload]
 }

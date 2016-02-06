@@ -1,6 +1,8 @@
 package controllers
 
+import play.api.Routes
 import play.api.mvc._
+import play.api.routing.JavaScriptReverseRouter
 
 /**
   * Created by darioalessandro on 12/14/15.
@@ -29,8 +31,24 @@ import play.api.mvc._
 
 class LoginUI extends Controller {
 
-  def login(client_id : String, scope : String) = Action {
-    Ok(views.html.enduser.Login(client_id, scope))
+  def index(client_id: String, scope: String) = Action {
+    Ok(views.html.enduser.index(client_id, scope))
+  }
+
+  def login = Action {
+    Ok(views.html.enduser.login())
+  }
+
+  def redirect = Action { implicit request =>
+    Ok(views.html.enduser.splash())
+  }
+
+  def jsRoutes = Action { implicit request =>
+    Ok(
+      JavaScriptReverseRouter("LoginUIRouter")(
+        controllers.routes.javascript.LoginUI.login
+      )
+    ).as("text/javascript")
   }
 
 }

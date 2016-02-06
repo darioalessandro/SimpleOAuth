@@ -3,7 +3,15 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.LoginUI.login(client_id : String, scope : String)
+GET     /                           controllers.LoginUI.index(client_id : String, scope : String)
+
+GET     /templates/login            controllers.LoginUI.login
+
+GET     /templates/redirect         controllers.LoginUI.redirect
+
+GET     /ui/jsRoutes                controllers.LoginUI.jsRoutes
+
+GET     /api/jsRoutes               controllers.LoginAPI.jsRoutes
 
 POST    /authGrant                  controllers.LoginAPI.authGrant()
 

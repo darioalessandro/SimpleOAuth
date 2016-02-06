@@ -1,0 +1,6 @@
+@(error:String)(implicit lang: Lang)
+
+<p class="bg-danger flash flash-error animate-show" ng-show="@Html(error) !== null" style="margin:23pt;">
+            {{@Html(error+".m")}}
+  <button ng-show="@Html(error+".onClick !== null && "+error+".onClick !== undefined")" ng-click="@Html(error+".onClick()")" style="float: right;">Retry</button>
+</p>
