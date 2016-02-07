@@ -1,7 +1,10 @@
 
 <div class="container">
     <div class="row">
-        <h2 class="form-signin-heading col-xs-8 col-xs-offset-2">Please sign in</h2>
+        <h2 class="form-signin-heading col-xs-8 col-xs-offset-2" ng-hide="isLoginWorking()">Please sign in</h2>
+    </div>
+    <div class="row">
+        <h2 class="form-signin-heading col-xs-8 col-xs-offset-2" ng-show="isLoginWorking()">Connecting...</h2>
     </div>
 
     <div class="row">
@@ -20,5 +23,7 @@
     </div>
     <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="submit(username,password)">Sign in</button>
   </form>
-    @views.html.errorTemplate("errors.login")
+    <div class="row" ng-hide="isLoginWorking()">
+        @views.html.errorTemplate("errors.login")
+    </div>
 </div>
