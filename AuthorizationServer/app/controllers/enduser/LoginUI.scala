@@ -39,14 +39,15 @@ class LoginUI extends Controller {
     Ok(views.html.enduser.login())
   }
 
-  def redirect = Action { implicit request =>
-    Ok(views.html.enduser.splash())
+  def success = Action { implicit request =>
+    Ok(views.html.enduser.success())
   }
 
   def jsRoutes = Action { implicit request =>
     Ok(
       JavaScriptReverseRouter("LoginUIRouter")(
-        controllers.routes.javascript.LoginUI.login
+        controllers.routes.javascript.LoginUI.login,
+        controllers.routes.javascript.LoginUI.success
       )
     ).as("text/javascript")
   }

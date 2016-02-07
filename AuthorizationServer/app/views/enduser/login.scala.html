@@ -1,6 +1,14 @@
+
 <div class="container">
-  <form class="form-signin" role="form">
-    <h2 class="form-signin-heading">Please sign in</h2>
+    <div class="row">
+        <h2 class="form-signin-heading col-xs-8 col-xs-offset-2">Please sign in</h2>
+    </div>
+
+    <div class="row">
+        @views.html.spinner("isLoginWorking()")
+    </div>
+
+  <form class="form-signin" role="form" ng-hide="isLoginWorking()">
     <label for="inputEmail" class="sr-only">Email address</label>
     <input type="text" ng-model="username" class="form-control" placeholder="Email address" required autofocus name="username">
     <label for="inputPassword" class="sr-only">Password</label>

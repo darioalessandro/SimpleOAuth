@@ -43,6 +43,7 @@
 
 
     <script src="@routes.Assets.versioned("js/app.js")"></script>
+    <script src="@routes.Assets.versioned("js/angular-ios9-patch.js")"></script>
     <script src="@routes.Assets.versioned("js/httpClient.js")"></script>
     <script src="@routes.Assets.versioned("js/error.js")"></script>
     <script src="@routes.Assets.versioned("js/LoginSvc.js")"></script>
@@ -54,10 +55,11 @@
 </head>
     <script type="application/javascript">
             window.client_id =@Html(s""" "$client_id" """);
-            window.scope=@Html(scope);
+            window.scope=@Html(s""" "$scope" """);
     </script>
     <body ng-app="appAuth">
-    <div ui-view="main"></div>
-    <footer>Dario A Lencina Talarico 2015</footer>
-</body>
+        <base href="/">
+        <div ui-view="main"></div>
+        <footer>Dario A Lencina Talarico 2015</footer>
+    </body>
 </html>

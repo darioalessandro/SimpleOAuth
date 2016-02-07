@@ -7,7 +7,7 @@ GET     /                           controllers.LoginUI.index(client_id : String
 
 GET     /templates/login            controllers.LoginUI.login
 
-GET     /templates/redirect         controllers.LoginUI.redirect
+GET     /templates/success          controllers.LoginUI.success
 
 GET     /ui/jsRoutes                controllers.LoginUI.jsRoutes
 
